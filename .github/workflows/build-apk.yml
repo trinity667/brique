@@ -26,11 +26,20 @@ jobs:
         run: flutter pub get
 
       - name: Build release APK
-        run: >
-          flutter build apk
-          --release
-          --target-platform android-arm64
-          --dart-define=API_URL=https://briques-paie-kfin.onrender.com
+        run: |
+          set -o pipefail
+          flutter build apk \
+            --release \
+            --target-platform android-arm64 \
+            --dart-define=API_URL=https://briques-paie-kfin.onrender.com 2>&1 | tee build-apk-ci.log
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-build-log
+          path: build-apk-ci.log
+          if-no-files-found: ignore
 
       - name: Publish GitHub release
         env:
